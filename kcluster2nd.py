@@ -1,5 +1,11 @@
-import numpy as np
+# import numpy as np
+# from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 from matplotlib import style
 style.use("ggplot")
-from sklearn.cluster import KMeans
+
+x = [1, 5, 1.5, 8, 1, 9]
+y = [2, 8, 1.8, 8, 0.6, 11]
+
+plt.scatter(x, y)
+plt.show()
