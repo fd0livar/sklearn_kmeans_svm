@@ -6,7 +6,7 @@ from datetime import datetime
 path = "C:/Users/fdoli/github/ScikitLearn/intraQuarter"
 
 
-def Key_Stats(gather="Total Debt/Equity (mrq)"):
+def key_stats(gather="Total Debt/Equity (mrq)"):
     statspath = path + '/_KeyStats'
     stock_list = [x[0] for x in os.walk(statspath)]
     df = pd.DataFrame(columns=['Date',
@@ -16,7 +16,7 @@ def Key_Stats(gather="Total Debt/Equity (mrq)"):
                                'Price',
                                'stock_p_change',
                                'SP500',
-                               'SP500_p_change'])
+                               'sp500_p_change'])
     sp500_df = pd.read_csv(path + '/project/' + 'YAHOO-INDEX_GSPC.csv')
     ticker_list = []
 
@@ -38,13 +38,11 @@ def Key_Stats(gather="Total Debt/Equity (mrq)"):
                     value = float(source.split(gather + ':</td><td class="yfnc_tabledata1">')[1].split('</td>')[0])
                     try:
                         sp500_date = datetime.fromtimestamp(unix_time).strftime('%Y-%m-%d')
-                        # row = sp500_df[(sp500_df.index == sp500_date)]
                         row = sp500_df[sp500_df["Date"] == sp500_date]
                         sp500_value = float(row['Adj Close'])
                     except:
                         sp500_date = datetime.fromtimestamp(unix_time-259200).strftime('%Y-%m-%d')
                         row = sp500_df[sp500_df["Date"] == sp500_date]
-                        # row = sp500_df[(sp500_df.index == sp500_date)]
                         sp500_value = float(row['Adj Close'])
 
                     stock_price = float(source.split('</small><big><b>')[1].split('</b></big>')[0])
@@ -67,9 +65,10 @@ def Key_Stats(gather="Total Debt/Equity (mrq)"):
                                     'sp500_p_change': sp500_p_change}, ignore_index=True)
                 except Exception as e:
                     pass
+                    # print(str(e))
 
     save = gather.replace(' ', '').replace(')', '').replace('(', '').replace('/', '')+'.csv'
     df.to_csv(path + '/project/' + save)  # saving csv file inside git-ignored folder
 
 
-Key_Stats()
+key_stats()
