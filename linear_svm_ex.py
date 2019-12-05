@@ -22,10 +22,13 @@ clf.fit(X, y)
 datapoint1 = np.array([0.58, 0.76]).reshape(1, -1)
 datapoint2 = np.array([10.58, 10.76]).reshape(1, -1)
 # print(clf.predict(datapoint2))
+
 w = clf.coef_[0]
 print(w)
+print(clf.intercept_[0])
 
 a = - w[0] / w[1]
+# print(a)
 xx = np.linspace(0, 12)
 yy = a * xx - clf.intercept_[0] / w[1]
 h0 = plt.plot(xx, yy, 'k-', label='non weighted div')
