@@ -9,9 +9,9 @@ style.use("ggplot")
 
 centers = [[1, 1, 1],
            [5, 5, 5],
-           [3, 10, 10]]
+           [3, 10, 20]]
 
-X, _ = make_blobs(n_samples=500, centers=centers, cluster_std=1.5)
+X, _ = make_blobs(n_samples=600, centers=centers, cluster_std=1.5)
 
 ms = MeanShift()
 ms.fit(X)
