@@ -47,6 +47,7 @@ FEATURES = ['DE Ratio',
 def build_data_set():
     data_df = pd.read_csv(path + 'key_stats.csv')
     # data_df = data_df[:100]
+    data_df = data_df.reindex(np.random.permutation(data_df.index))
 
     X = np.array(data_df[FEATURES].values)
 
