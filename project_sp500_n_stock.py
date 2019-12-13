@@ -207,7 +207,7 @@ def key_stats(gather=["Total Debt/Equity",
                     else:
                         status = "underperform"
 
-                    if value_list.count("N/A") > 0:
+                    if value_list.count("N/A") > 15:
                         pass
                     else:
 
@@ -261,7 +261,7 @@ def key_stats(gather=["Total Debt/Equity",
                 except Exception as e:
                     pass
 
-    df.to_csv(path + '/project/' + 'key_stats_acc_perf_NO_NA.csv')
+    df.to_csv(path + '/project/' + 'key_stats_acc_perf_WITH_NA.csv')
 
 
 key_stats()
