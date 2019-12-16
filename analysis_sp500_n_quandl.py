@@ -53,6 +53,7 @@ def build_data_set():
     data_df = data_df.fillna(0).replace("N/A", 0)  # this line works instead of replace NaN
     X = np.array(data_df[FEATURES].values)
 
+    # "y" contains the labels. either out or underperform
     y = (data_df['Status']
          .replace('underperform', 0)
          .replace('outperform', 1)
@@ -106,3 +107,4 @@ def analysis():
     print("Average market return:", str(avg_market) + "%")
 
 analysis()
+
