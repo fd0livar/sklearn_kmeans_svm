@@ -2,19 +2,20 @@ import pandas as pd
 import os
 import time
 from datetime import datetime
+
+from time import mktime
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import style
+
+style.use("dark_background")
+
 import re
-# import urllib
-# from time import mktime
-
-style.use('dark_background')
-
 
 path = "C:/Users/fdoli/github/ScikitLearn/intraQuarter"
 
 
-def key_stats(gather=['Total Debt/Equity',
+def key_stats(gather=["Total Debt/Equity",
                       'Trailing P/E',
                       'Price/Sales',
                       'Price/Book',
@@ -100,6 +101,8 @@ def key_stats(gather=['Total Debt/Equity',
                                'Status'])
 
     sp500_df = pd.read_csv(path + '/project/' + 'YAHOO-INDEX_GSPC.csv')
+    stock_df = pd.read_csv(path + '/project/' + 'stock_prices.csv')
+
     ticker_list = []
 
     for each_dir in stock_list[1:]:
@@ -107,10 +110,10 @@ def key_stats(gather=['Total Debt/Equity',
         ticker = each_dir.split("\\")[1]
         ticker_list.append(ticker)
 
-        starting_stock_value = False
-        starting_sp500_value = False
+        ##        starting_stock_value = False
+        ##        starting_sp500_value = False
 
-        if len(each_file) > 0:  # bc some folders are empty
+        if len(each_file) > 0:
             for file in each_file:
                 date_stamp = datetime.strptime(file, '%Y%m%d%H%M%S.html')
                 unix_time = time.mktime(date_stamp.timetuple())
@@ -121,20 +124,23 @@ def key_stats(gather=['Total Debt/Equity',
 
                     for each_data in gather:
                         try:
-                            regex = re.escape(each_data) + r'.*?(\d{1,8}\.\d{1,8}M?B?|N/A)%?</td>'
+                            regex = re.escape(each_data) + r'.*?(\d{1,8}\.\d{1,8}M?B?|N/A)%?'
+                            # regex = re.escape(each_data) + r'.*?(\d{1,8}\.\d{1,8}M?B?|N/A)%?</td>'
+
                             value = re.search(regex, source)
                             value = (value.group(1))
 
-                            if 'B' in value:
-                                value = float(value.replace('B', '')) * 1000000000
-                            elif 'M' in value:
-                                value = float(value.replace('M', '')) * 1000000
+                            if "B" in value:
+                                value = float(value.replace("B", '')) * 1000000000
+
+                            elif "M" in value:
+                                value = float(value.replace("M", '')) * 1000000
 
                             value_list.append(value)
-                            # print('value!')
+
+
                         except Exception as e:
-                            # print('no value')
-                            value = 'N/A'
+                            value = "N/A"
                             value_list.append(value)
 
                     try:
@@ -142,56 +148,80 @@ def key_stats(gather=['Total Debt/Equity',
                         row = sp500_df[sp500_df["Date"] == sp500_date]
                         sp500_value = float(row['Adj Close'])
                     except:
-                        sp500_date = datetime.fromtimestamp(unix_time-259200).strftime('%Y-%m-%d')
-                        row = sp500_df[sp500_df["Date"] == sp500_date]
-                        sp500_value = float(row['Adj Close'])
+                        try:
+                            sp500_date = datetime.fromtimestamp(unix_time - 259200).strftime('%Y-%m-%d')
+                            row = sp500_df[sp500_df["Date"] == sp500_date]
+                            sp500_value = float(row['Adj Close'])
+                        except Exception as e:
+                            print("fapsdolkfhasf;lsak", str(e))
+
+                    one_year_later = int(unix_time + 31536000)
 
                     try:
-                        stock_price = float(source.split('</small><big><b>')[1].split('</b></big>')[0])
+                        sp500_1y = datetime.fromtimestamp(one_year_later).strftime('%Y-%m-%d')
+                        row = sp500_df[(sp500_df['Date'] == sp500_1y)]
+                        sp500_1y_value = float(row["Adj Close"])
+                    except:
+                        try:
+                            sp500_1y = datetime.fromtimestamp(one_year_later - 259200).strftime('%Y-%m-%d')
+                            row = sp500_df[(sp500_df['Date'] == sp500_1y)]
+                            sp500_1y_value = float(row["Adj Close"])
+                        except Exception as e:
+                            print("sp500 1 year later issue", str(e))
+
+                    try:
+                        stock_price_1y = datetime.fromtimestamp(one_year_later).strftime('%Y-%m-%d')
+                        row = stock_df[(stock_df['date'] == stock_price_1y)][ticker.upper()]
+                        stock_1y_value = round(float(row), 2)
+                        # print(stock_1y_value)
+                        # time.sleep(1555)
+
                     except Exception as e:
                         try:
-                            stock_price = source.split('</small><big><b>')[1].split('</b></big>')[0]
-                            stock_price = re.search(r'(\d{1,8}\.\d{1,8})', stock_price)
-                            stock_price = float(stock_price.group(1))
+                            stock_price_1y = datetime.fromtimestamp(one_year_later - 259200).strftime('%Y-%m-%d')
+                            row = stock_df[(stock_df['date'] == stock_price_1y)][ticker.upper()]
+                            stock_1y_value = round(float(row), 2)
                         except Exception as e:
-                            try:
-                                stock_price = source.split('<span class="time_rtq_ticker">')[1].split('<\span>')[0]
-                                stock_price = re.search(r'(\d{1,8}\.\d{1,8})', stock_price)
-                                stock_price = float(stock_price.group(1))
-                            except Exception as e:
-                                print('wtf stock price lol: ', str(e), ticker, file)
-                                time.sleep(5)
+                            print("stock price:", str(e))
 
-                    if not starting_stock_value:
-                        starting_stock_value = stock_price
-                    if not starting_sp500_value:
-                        starting_sp500_value = sp500_value
+                    try:
+                        stock_price = datetime.fromtimestamp(unix_time).strftime('%Y-%m-%d')
+                        row = stock_df[(stock_df['date'] == stock_price)][ticker.upper()]
+                        stock_price = round(float(row), 2)
 
-                    stock_p_change = ((stock_price - starting_stock_value) / starting_stock_value) * 100
-                    sp500_p_change = ((sp500_value - starting_sp500_value) / starting_sp500_value) * 100
+                    except Exception as e:
+                        try:
+                            stock_price = datetime.fromtimestamp(unix_time - 259200).strftime('%Y-%m-%d')
+                            row = stock_df[(stock_df['date'] == stock_price)][ticker.upper()]
+                            stock_price = round(float(row), 2)
+                        except Exception as e:
+                            print("stock price:", str(e))
 
-                    # location = len(df['Date'])
+                    stock_p_change = round((((stock_1y_value - stock_price) / stock_price) * 100), 2)
+                    sp500_p_change = round((((sp500_1y_value - sp500_value) / sp500_value) * 100), 2)
+
                     difference = stock_p_change - sp500_p_change
 
                     if difference > 0:
-                        status = 'outperform'
+                        status = "outperform"
                     else:
-                        status = 'underperform'
+                        status = "underperform"
 
-                    if value_list.count('N/A') > 0:
-                        # print('there is a N/A')
+                    if value_list.count("N/A") > 15:
                         pass
                     else:
-                        df = df.append({'Date':date_stamp,
+
+                        df = df.append({'Date': date_stamp,
                                         'Unix': unix_time,
                                         'Ticker': ticker,
+
                                         'Price': stock_price,
                                         'stock_p_change': stock_p_change,
                                         'SP500': sp500_value,
                                         'sp500_p_change': sp500_p_change,
                                         'Difference': difference,
                                         'DE Ratio': value_list[0],
-                                        #'Market Cap':value_list[1],
+                                        # 'Market Cap':value_list[1],
                                         'Trailing P/E': value_list[1],
                                         'Price/Sales': value_list[2],
                                         'Price/Book': value_list[3],
@@ -226,29 +256,12 @@ def key_stats(gather=['Total Debt/Equity',
                                         'Short Ratio': value_list[32],
                                         'Short % of Float': value_list[33],
                                         'Shares Short (prior ': value_list[34],
-                                        'Status':status},
+                                        'Status': status},
                                        ignore_index=True)
                 except Exception as e:
                     pass
 
-    # for each_ticker in ticker_list:
-    #     try:
-    #         plot_df = df[(df['Ticker'] == each_ticker)]
-    #         plot_df = plot_df.set_index(['Date'])
-    #
-    #         if plot_df['Status'][-1] == 'underperform':
-    #             color = 'r'
-    #         else:
-    #             color = 'g'
-    #
-    #         plot_df['Difference'].plot(label=each_ticker, color=color)
-    #         plt.legend()
-    #     except Exception as e:
-    #         print(str(e))
-    #
-    # plt.show()
-
-    df.to_csv(path + '/project/' + 'key_stats.csv')  # saving csv file inside git-ignored folder
+    df.to_csv(path + '/project/' + 'key_stats_acc_perf_WITH_NA.csv')
 
 
 key_stats()
